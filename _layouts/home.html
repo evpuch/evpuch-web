@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title | default: site.title }}</title>
+    <meta name="description" content="{{ site.description }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+    <div class="grid-layout">
+        <!-- Left column - identity -->
+        <header class="identity">
+            <div class="identity-top">
+                <h1 class="name">{{ page.author_name }}</h1>
+                <img src="{{ '/assets/images/' | append: page.profile_image | relative_url }}" alt="{{ page.author_name }}" class="profile-photo">
+                <div class="affiliation">
+                    <span class="dept">{{ page.department }}</span>
+                    <span class="school">{{ page.school }}</span>
+                    <span class="origin">{{ page.origin }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Visual element -->
+        <div class="visual-block" id="molecule-container">
+        </div>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <section class="intro">
+                <p class="lead">{{ page.lead }}</p>
+                <p>{{ page.intro | markdownify | remove: '<p>' | remove: '</p>' }}</p>
+            </section>
+
+            <section class="research-areas">
+                <h2>Endeavours</h2>
+                <div class="area-list">
+                    {% for item in site.data.endeavours %}
+                    <div class="area">
+                        <span class="area-number">{{ forloop.index | prepend: '00' | slice: -2, 2 }}</span>
+                        <span class="area-name">{{ item.name }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="beliefs">
+                <h2>Foundations</h2>
+                <p>{{ page.foundations }}</p>
+            </section>
+
+            <section class="personal">
+                <h2>Otherwise</h2>
+                <p>{{ page.otherwise | markdownify | remove: '<p>' | remove: '</p>' }}</p>
+            </section>
+        </main>
+
+        <!-- Side content -->
+        <aside class="side-content">
+            <section class="photos">
+                <div class="photo-grid">
+                    {% for photo in site.data.photos %}
+                    <figure class="photo-item">
+                        <img src="{{ '/assets/images/' | append: photo.image | relative_url }}" alt="{{ photo.alt }}">
+                        <figcaption>{{ photo.caption }}</figcaption>
+                    </figure>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="links">
+                <h2>Find me</h2>
+                <nav class="link-list">
+                    {% for link in site.data.links %}
+                    <a href="{{ link.url }}"{% if link.external %} target="_blank" rel="noopener"{% endif %}>{{ link.name }}</a>
+                    {% endfor %}
+                </nav>
+            </section>
+        </aside>
+
+        <!-- Footer spans full width -->
+        <footer class="site-footer">
+            <span class="copyright">{{ page.copyright }}</span>
+            <span class="coordinates">{{ page.coordinates }}</span>
+        </footer>
+    </div>
+    <script type="module" src="{{ '/assets/js/molecule.js' | relative_url }}"></script>
+</body>
+</html>

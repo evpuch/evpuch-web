@@ -1,0 +1,24 @@
+title: "Emilka Puchalski"
+description: "Statistical learning for biological systems"
+author: Emilka Puchalski
+url: ""
+baseurl: ""
+
+# Build settings
+markdown: kramdown
+permalink: pretty
+
+# Single page site - no navigation needed
+
+# Social links (update with your real links!)
+social:
+  twitter: ""
+  linkedin: "https://www.linkedin.com/in/emilka-puchalski/"
+  github: ""
+  email: ""
+
+# Exclude from build
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md

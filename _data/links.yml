@@ -1,0 +1,10 @@
+- name: emilka@princeton.edu
+  url: mailto:emilka@princeton.edu
+
+- name: LinkedIn
+  url: https://www.linkedin.com/in/emilka-puchalski/
+  external: true
+
+- name: Substack
+  url: https://substack.com/@evpuch
+  external: true
