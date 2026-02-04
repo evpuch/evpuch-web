@@ -27,15 +27,15 @@ function initMolecule() {
     const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
     scene.add(ambientLight);
 
-    const pointLight1 = new THREE.PointLight(0x60a5fa, 1, 100);
+    const pointLight1 = new THREE.PointLight(0x93c5fd, 1, 100);
     pointLight1.position.set(10, 10, 10);
     scene.add(pointLight1);
 
-    const pointLight2 = new THREE.PointLight(0x3b82f6, 0.8, 100);
+    const pointLight2 = new THREE.PointLight(0x7dd3fc, 0.8, 100);
     pointLight2.position.set(-10, -10, 5);
     scene.add(pointLight2);
 
-    const pointLight3 = new THREE.PointLight(0x1d4ed8, 0.6, 100);
+    const pointLight3 = new THREE.PointLight(0x60a5fa, 0.6, 100);
     pointLight3.position.set(0, 10, -10);
     scene.add(pointLight3);
 
@@ -43,47 +43,47 @@ function initMolecule() {
     const molecule = new THREE.Group();
     scene.add(molecule);
 
-    // Materials - different shades of blue
+    // Materials - lighter shades of blue
     const materials = {
         core: new THREE.MeshPhongMaterial({
-            color: 0x60a5fa,
-            emissive: 0x1e40af,
+            color: 0x93c5fd,
+            emissive: 0x3b82f6,
             emissiveIntensity: 0.3,
             shininess: 100
         }),
         major: new THREE.MeshPhongMaterial({
-            color: 0x3b82f6,
-            emissive: 0x1d4ed8,
+            color: 0x7dd3fc,
+            emissive: 0x38bdf8,
             emissiveIntensity: 0.2,
             shininess: 80
         }),
         cluster: new THREE.MeshPhongMaterial({
-            color: 0x0ea5e9,
-            emissive: 0x0369a1,
+            color: 0xa5f3fc,
+            emissive: 0x22d3ee,
             emissiveIntensity: 0.2,
             shininess: 80
         }),
         secondary: new THREE.MeshPhongMaterial({
-            color: 0x6366f1,
-            emissive: 0x4338ca,
+            color: 0xa5b4fc,
+            emissive: 0x818cf8,
             emissiveIntensity: 0.2,
             shininess: 70
         }),
         tiny: new THREE.MeshPhongMaterial({
-            color: 0x93c5fd,
-            emissive: 0x2563eb,
+            color: 0xbfdbfe,
+            emissive: 0x60a5fa,
             emissiveIntensity: 0.15,
             shininess: 60
         }),
         ring: new THREE.MeshPhongMaterial({
-            color: 0x2563eb,
-            emissive: 0x1e3a8a,
+            color: 0x7dd3fc,
+            emissive: 0x38bdf8,
             emissiveIntensity: 0.2,
             shininess: 80
         }),
         bond: new THREE.MeshPhongMaterial({
-            color: 0x60a5fa,
-            emissive: 0x1e40af,
+            color: 0x93c5fd,
+            emissive: 0x3b82f6,
             emissiveIntensity: 0.1,
             shininess: 50,
             transparent: true,
