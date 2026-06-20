@@ -12,9 +12,9 @@
 </head>
 <body>
     <div class="grid-layout">
-        <!-- Left column - identity -->
+        <!-- Left rail - sticky identity -->
         <header class="identity">
-            <div class="identity-top">
+            <div class="identity-inner">
                 <h1 class="name">{{ page.author_name }}</h1>
                 <img src="{{ '/assets/images/' | append: page.profile_image | relative_url }}" alt="{{ page.author_name }}" class="profile-photo">
                 <div class="affiliation">
@@ -22,15 +22,22 @@
                     <span class="school">{{ page.school }}</span>
                     <span class="origin">{{ page.origin }}</span>
                 </div>
+                <nav class="link-list">
+                    {% for link in site.data.links %}
+                    <a href="{{ link.url }}"{% if link.external %} target="_blank" rel="noopener"{% endif %}>{{ link.name }}</a>
+                    {% endfor %}
+                </nav>
+            </div>
+            <div class="identity-meta">
+                <span class="copyright">{{ page.copyright }}</span>
+                <span class="coordinates">{{ page.coordinates }}</span>
             </div>
         </header>
 
-        <!-- Visual element -->
-        <div class="visual-block" id="molecule-container">
-        </div>
-
-        <!-- Main content -->
+        <!-- Scrolling content column -->
         <main class="main-content">
+            <div class="visual-block" id="molecule-container"></div>
+
             <section class="intro">
                 <p class="lead">{{ page.lead }}</p>
                 <p>{{ page.intro | markdownify | remove: '<p>' | remove: '</p>' }}</p>
@@ -48,20 +55,20 @@
                 </div>
             </section>
 
-            <section class="beliefs">
-                <h2>Foundations</h2>
-                <p>{{ page.foundations }}</p>
-            </section>
+            <div class="prose-cols">
+                <section class="beliefs">
+                    <h2>Foundations</h2>
+                    <p>{{ page.foundations }}</p>
+                </section>
 
-            <section class="personal">
-                <h2>Otherwise</h2>
-                <p>{{ page.otherwise | markdownify | remove: '<p>' | remove: '</p>' }}</p>
-            </section>
-        </main>
+                <section class="personal">
+                    <h2>Otherwise</h2>
+                    <p>{{ page.otherwise | markdownify | remove: '<p>' | remove: '</p>' }}</p>
+                </section>
+            </div>
 
-        <!-- Side content -->
-        <aside class="side-content">
             <section class="photos">
+                <h2>Elsewhere</h2>
                 <div class="photo-grid">
                     {% for photo in site.data.photos %}
                     <figure class="photo-item">
@@ -71,22 +78,7 @@
                     {% endfor %}
                 </div>
             </section>
-
-            <section class="links">
-                <h2>Find me</h2>
-                <nav class="link-list">
-                    {% for link in site.data.links %}
-                    <a href="{{ link.url }}"{% if link.external %} target="_blank" rel="noopener"{% endif %}>{{ link.name }}</a>
-                    {% endfor %}
-                </nav>
-            </section>
-        </aside>
-
-        <!-- Footer spans full width -->
-        <footer class="site-footer">
-            <span class="copyright">{{ page.copyright }}</span>
-            <span class="coordinates">{{ page.coordinates }}</span>
-        </footer>
+        </main>
     </div>
     <script type="module" src="{{ '/assets/js/molecule.js' | relative_url }}"></script>
 </body>

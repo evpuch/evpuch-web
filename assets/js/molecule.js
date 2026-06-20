@@ -39,8 +39,10 @@ function initMolecule() {
     pointLight3.position.set(0, 10, -10);
     scene.add(pointLight3);
 
-    // Molecule group
+    // Molecule group (outer = rotates; inner = holds geometry, offset to its centroid)
     const molecule = new THREE.Group();
+    const inner = new THREE.Group();
+    molecule.add(inner);
     scene.add(molecule);
 
     // Materials - lighter shades of blue
@@ -96,7 +98,7 @@ function initMolecule() {
         const geometry = new THREE.SphereGeometry(radius, 32, 32);
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(position.x, position.y, position.z);
-        molecule.add(mesh);
+        inner.add(mesh);
         return mesh;
     }
 
@@ -114,7 +116,7 @@ function initMolecule() {
             direction.clone().normalize()
         );
 
-        molecule.add(mesh);
+        inner.add(mesh);
         return mesh;
     }
 
@@ -277,6 +279,18 @@ function initMolecule() {
     ];
 
     tips.forEach(pos => createAtom(0.12, materials.tiny, pos));
+
+    // Recenter: offset inner group by its geometric centroid so the molecule
+    // sits in the middle of the frame and rotates around its own center.
+    const bbox = new THREE.Box3().setFromObject(inner);
+    const center = bbox.getCenter(new THREE.Vector3());
+    inner.position.sub(center);
+
+    // Fit the camera to the molecule's bounding sphere so it never clips the frame.
+    const sphere = bbox.getBoundingSphere(new THREE.Sphere());
+    const fitDist = sphere.radius / Math.sin((camera.fov * Math.PI / 180) / 2);
+    camera.position.z = fitDist * 1.05;
+    camera.updateProjectionMatrix();
 
     // Animation
     let mouseX = 0;
