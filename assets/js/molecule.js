@@ -45,6 +45,9 @@ function initMolecule() {
     molecule.add(inner);
     scene.add(molecule);
 
+    // Atoms that respond to hover
+    const atomMeshes = [];
+
     // Materials - lighter shades of blue
     const materials = {
         core: new THREE.MeshPhongMaterial({
@@ -96,8 +99,15 @@ function initMolecule() {
     // Helper function to create atom
     function createAtom(radius, material, position) {
         const geometry = new THREE.SphereGeometry(radius, 32, 32);
-        const mesh = new THREE.Mesh(geometry, material);
+        // Clone the material so each atom can be highlighted independently.
+        const mat = material.clone();
+        const mesh = new THREE.Mesh(geometry, mat);
         mesh.position.set(position.x, position.y, position.z);
+        mesh.userData.baseColor = mat.color.clone();
+        mesh.userData.baseEmissive = mat.emissive.clone();
+        mesh.userData.baseEI = mat.emissiveIntensity;
+        mesh.userData.hl = 0;
+        atomMeshes.push(mesh);
         inner.add(mesh);
         return mesh;
     }
@@ -310,6 +320,49 @@ function initMolecule() {
         mouseY = (e.clientY / window.innerHeight) * 2 - 1;
     });
 
+    // Hover highlighting via raycasting
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let pointerInside = false;
+    const HL_COLOR = new THREE.Color(0x64ffda);
+
+    renderer.domElement.addEventListener('pointermove', (e) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        pointerInside = true;
+    });
+    renderer.domElement.addEventListener('pointerleave', () => {
+        pointerInside = false;
+    });
+
+    function updateHover() {
+        let hovered = null;
+        if (pointerInside) {
+            raycaster.setFromCamera(pointer, camera);
+            const hits = raycaster.intersectObjects(atomMeshes, false);
+            if (hits.length) hovered = hits[0].object;
+        }
+
+        for (const m of atomMeshes) {
+            const target = m === hovered ? 1 : 0;
+            // ease the highlight in/out
+            m.userData.hl += (target - m.userData.hl) * 0.15;
+            const hl = m.userData.hl;
+            if (hl > 0.002) {
+                m.material.color.copy(m.userData.baseColor).lerp(HL_COLOR, hl * 0.5);
+                m.material.emissive.copy(m.userData.baseEmissive).lerp(HL_COLOR, hl * 0.65);
+                m.material.emissiveIntensity = m.userData.baseEI + hl * 0.6;
+                m.scale.setScalar(1 + hl * 0.18);
+            } else {
+                m.material.color.copy(m.userData.baseColor);
+                m.material.emissive.copy(m.userData.baseEmissive);
+                m.material.emissiveIntensity = m.userData.baseEI;
+                m.scale.setScalar(1);
+            }
+        }
+    }
+
     function animate() {
         requestAnimationFrame(animate);
 
@@ -320,6 +373,10 @@ function initMolecule() {
         // Subtle mouse interaction
         molecule.rotation.y += mouseX * 0.002;
         molecule.rotation.x += mouseY * 0.001;
+
+        // Keep world matrices current so raycasting tracks the rotating atoms
+        scene.updateMatrixWorld();
+        updateHover();
 
         renderer.render(scene, camera);
     }
