@@ -12,11 +12,19 @@
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
 <body>
-    <!-- Hero: big spinning molecule -->
-    <div class="hero" id="molecule-container"></div>
+    <!-- Hero: big spinning molecule, full viewport -->
+    <section class="hero">
+        <div class="hero-molecule" id="molecule-container"></div>
+        <a class="scroll-cue" href="#content" aria-label="Scroll down">
+            <span>Scroll</span>
+            <svg width="22" height="13" viewBox="0 0 22 13" fill="none" aria-hidden="true">
+                <path d="M2 2 L11 11 L20 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
+    </section>
 
     <!-- Everything below: side rail + content -->
-    <div class="grid-layout">
+    <div class="grid-layout" id="content">
         <header class="identity">
             <div class="identity-inner">
                 <h1 class="name">{{ page.author_name }}</h1>

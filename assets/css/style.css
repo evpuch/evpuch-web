@@ -47,17 +47,59 @@ a:hover {
 /* ================================ */
 
 .hero {
+    position: relative;
     width: 100%;
-    height: clamp(460px, 82vh, 860px);
+    height: 100vh;
+    height: 100svh;
     overflow: hidden;
     border-bottom: 1px solid var(--border);
     background:
         radial-gradient(ellipse 55% 60% at 50% 45%, rgba(96, 165, 250, 0.10) 0%, rgba(100, 255, 218, 0.03) 40%, transparent 72%);
 }
 
-.hero canvas {
+.hero-molecule {
+    position: absolute;
+    inset: 0;
+}
+
+.hero-molecule canvas {
     display: block;
     margin: 0 auto;
+}
+
+.scroll-cue {
+    position: absolute;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--fg-dim);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: scroll-bob 1.8s ease-in-out infinite;
+}
+
+.scroll-cue svg {
+    color: var(--accent);
+}
+
+.scroll-cue:hover {
+    opacity: 1;
+    color: var(--fg);
+}
+
+@keyframes scroll-bob {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, 8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-cue { animation: none; }
 }
 
 /* ================================ */
@@ -310,10 +352,6 @@ a:hover {
 /* ================================ */
 
 @media (max-width: 900px) {
-    .hero {
-        height: clamp(340px, 56vh, 520px);
-    }
-
     .grid-layout {
         grid-template-columns: 1fr;
         max-width: 640px;
