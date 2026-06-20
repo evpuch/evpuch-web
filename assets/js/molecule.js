@@ -334,6 +334,11 @@ function initMolecule() {
     let pointerInside = false;
     let pointerClientX = 0;
     let pointerClientY = 0;
+    let lastHoveredGroup = null;
+    let pinnedGroup = null;
+    let pinnedX = 0;
+    let pinnedY = 0;
+    let spin = 1; // rotation speed factor (eases to 0 while reading a branch)
     const HL_COLOR = new THREE.Color(0x64ffda);
 
     // Each branch maps to a short blurb — PLACEHOLDER COPY, edit these freely.
@@ -350,7 +355,7 @@ function initMolecule() {
     const hero = container.closest('.hero') || container.parentElement;
     const tip = document.createElement('div');
     tip.className = 'atom-tip';
-    tip.innerHTML = '<span class="atom-tip-title"></span><span class="atom-tip-text"></span>';
+    tip.innerHTML = '<span class="atom-tip-title"></span><span class="atom-tip-text"></span><span class="atom-tip-hint">Click anywhere to dismiss</span>';
     if (hero) hero.appendChild(tip);
 
     renderer.domElement.addEventListener('pointermove', (e) => {
@@ -365,6 +370,18 @@ function initMolecule() {
         pointerInside = false;
     });
 
+    // Click an atom to pin its blurb open (rotation pauses); click again or
+    // click empty space to dismiss.
+    renderer.domElement.addEventListener('click', () => {
+        if (lastHoveredGroup && lastHoveredGroup !== pinnedGroup) {
+            pinnedGroup = lastHoveredGroup;
+            pinnedX = pointerClientX;
+            pinnedY = pointerClientY;
+        } else {
+            pinnedGroup = null;
+        }
+    });
+
     function showTip(group) {
         if (!hero) return;
         if (group && BLURBS[group]) {
@@ -374,17 +391,22 @@ function initMolecule() {
                 tip.querySelector('.atom-tip-text').textContent = b.text;
                 tip._group = group;
             }
+            const isPinned = pinnedGroup === group;
+            tip.classList.toggle('pinned', isPinned);
+            // Pinned popups stay where they were clicked; hovered ones follow the cursor.
+            const baseX = isPinned ? pinnedX : pointerClientX;
+            const baseY = isPinned ? pinnedY : pointerClientY;
             const rect = hero.getBoundingClientRect();
             const tw = tip.offsetWidth || 220;
             const th = tip.offsetHeight || 80;
-            let lx = pointerClientX - rect.left + 18;
-            let ly = pointerClientY - rect.top + 18;
-            if (lx + tw > rect.width - 8) lx = pointerClientX - rect.left - tw - 18;
+            let lx = baseX - rect.left + 18;
+            let ly = baseY - rect.top + 18;
+            if (lx + tw > rect.width - 8) lx = baseX - rect.left - tw - 18;
             if (ly + th > rect.height - 8) ly = rect.height - th - 8;
             tip.style.transform = `translate(${Math.max(8, lx)}px, ${Math.max(8, ly)}px)`;
             tip.classList.add('visible');
         } else {
-            tip.classList.remove('visible');
+            tip.classList.remove('visible', 'pinned');
             tip._group = null;
         }
     }
@@ -396,11 +418,15 @@ function initMolecule() {
             const hits = raycaster.intersectObjects(atomMeshes, false);
             if (hits.length) hovered = hits[0].object;
         }
-        const hoveredGroup = hovered ? hovered.userData.group : null;
+        lastHoveredGroup = hovered ? hovered.userData.group : null;
+        renderer.domElement.style.cursor = lastHoveredGroup ? 'pointer' : '';
 
-        // Highlight the whole branch the hovered atom belongs to
+        // A pinned branch wins; otherwise show whatever is hovered.
+        const activeGroup = pinnedGroup || lastHoveredGroup;
+
+        // Highlight the whole branch
         for (const m of atomMeshes) {
-            const target = (hoveredGroup && m.userData.group === hoveredGroup) ? 1 : 0;
+            const target = (activeGroup && m.userData.group === activeGroup) ? 1 : 0;
             m.userData.hl += (target - m.userData.hl) * 0.15;
             const hl = m.userData.hl;
             if (hl > 0.002) {
@@ -416,19 +442,23 @@ function initMolecule() {
             }
         }
 
-        showTip(hoveredGroup);
+        showTip(activeGroup);
     }
 
     function animate() {
         requestAnimationFrame(animate);
 
-        // Slow automatic rotation
-        molecule.rotation.y += 0.003;
-        molecule.rotation.x += 0.001;
+        // Ease the spin toward a stop while a branch is hovered or pinned, so
+        // the atom stays under the cursor and its blurb is easy to read.
+        const spinTarget = (pinnedGroup || lastHoveredGroup) ? 0 : 1;
+        spin += (spinTarget - spin) * 0.08;
+
+        molecule.rotation.y += 0.003 * spin;
+        molecule.rotation.x += 0.001 * spin;
 
         // Subtle mouse interaction
-        molecule.rotation.y += mouseX * 0.002;
-        molecule.rotation.x += mouseY * 0.001;
+        molecule.rotation.y += mouseX * 0.002 * spin;
+        molecule.rotation.x += mouseY * 0.001 * spin;
 
         // Keep world matrices current so raycasting tracks the rotating atoms
         scene.updateMatrixWorld();
