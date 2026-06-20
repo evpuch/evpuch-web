@@ -286,11 +286,20 @@ function initMolecule() {
     const center = bbox.getCenter(new THREE.Vector3());
     inner.position.sub(center);
 
-    // Fit the camera to the molecule's bounding sphere so it never clips the frame.
-    const sphere = bbox.getBoundingSphere(new THREE.Sphere());
-    const fitDist = sphere.radius / Math.sin((camera.fov * Math.PI / 180) / 2);
-    camera.position.z = fitDist * 1.05;
-    camera.updateProjectionMatrix();
+    // Fit the camera to the molecule's bounding sphere. Fill aggressively on
+    // landscape (vertical-bound) for a big hero; on portrait, fit the width so
+    // the wide molecule never clips at the sides.
+    const radius = bbox.getBoundingSphere(new THREE.Sphere()).radius;
+
+    function fitCamera() {
+        const vFov = (camera.fov * Math.PI) / 180;
+        const distV = radius / Math.sin(vFov / 2);
+        const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+        const distH = radius / Math.sin(hFov / 2);
+        camera.position.z = Math.max(distV * 0.82, distH);
+        camera.updateProjectionMatrix();
+    }
+    fitCamera();
 
     // Animation
     let mouseX = 0;
@@ -323,7 +332,7 @@ function initMolecule() {
         const newHeight = container.clientHeight;
 
         camera.aspect = newWidth / newHeight;
-        camera.updateProjectionMatrix();
+        fitCamera();
         renderer.setSize(newWidth, newHeight);
     });
 }

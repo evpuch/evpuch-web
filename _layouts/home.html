@@ -15,68 +15,72 @@
     <!-- Hero: big spinning molecule -->
     <div class="hero" id="molecule-container"></div>
 
-    <main class="content">
-        <!-- Name + brief info -->
-        <header class="masthead">
-            <img src="{{ '/assets/images/' | append: page.profile_image | relative_url }}" alt="{{ page.author_name }}" class="profile-photo">
-            <h1 class="name">{{ page.author_name }}</h1>
-            <div class="affiliation">
-                <span class="dept">{{ page.department }}</span>
-                <span class="school">{{ page.school }}</span>
-                <span class="origin">{{ page.origin }}</span>
-            </div>
-            <p class="lead">{{ page.lead }}</p>
-            <p class="intro-text">{{ page.intro | markdownify | remove: '<p>' | remove: '</p>' }}</p>
-        </header>
-
-        <section class="research-areas">
-            <h2>Endeavours</h2>
-            <div class="area-list">
-                {% for item in site.data.endeavours %}
-                <div class="area">
-                    <span class="area-number">{{ forloop.index | prepend: '00' | slice: -2, 2 }}</span>
-                    <span class="area-name">{{ item.name }}</span>
+    <!-- Everything below: side rail + content -->
+    <div class="grid-layout">
+        <header class="identity">
+            <div class="identity-inner">
+                <h1 class="name">{{ page.author_name }}</h1>
+                <img src="{{ '/assets/images/' | append: page.profile_image | relative_url }}" alt="{{ page.author_name }}" class="profile-photo">
+                <div class="affiliation">
+                    <span class="dept">{{ page.department }}</span>
+                    <span class="school">{{ page.school }}</span>
+                    <span class="origin">{{ page.origin }}</span>
                 </div>
-                {% endfor %}
+                <nav class="link-list">
+                    {% for link in site.data.links %}
+                    <a href="{{ link.url }}"{% if link.external %} target="_blank" rel="noopener"{% endif %}>{{ link.name }}</a>
+                    {% endfor %}
+                </nav>
             </div>
-        </section>
-
-        <div class="prose-cols">
-            <section class="beliefs">
-                <h2>Foundations</h2>
-                <p>{{ page.foundations }}</p>
-            </section>
-
-            <section class="personal">
-                <h2>Otherwise</h2>
-                <p>{{ page.otherwise | markdownify | remove: '<p>' | remove: '</p>' }}</p>
-            </section>
-        </div>
-
-        <section class="photos">
-            <h2>Elsewhere</h2>
-            <div class="photo-grid">
-                {% for photo in site.data.photos %}
-                <figure class="photo-item">
-                    <img src="{{ '/assets/images/' | append: photo.image | relative_url }}" alt="{{ photo.alt }}">
-                    <figcaption>{{ photo.caption }}</figcaption>
-                </figure>
-                {% endfor %}
-            </div>
-        </section>
-
-        <footer class="page-footer">
-            <nav class="link-list">
-                {% for link in site.data.links %}
-                <a href="{{ link.url }}"{% if link.external %} target="_blank" rel="noopener"{% endif %}>{{ link.name }}</a>
-                {% endfor %}
-            </nav>
-            <div class="footer-meta">
+            <div class="identity-meta">
                 <span class="copyright">{{ page.copyright }}</span>
                 <span class="coordinates">{{ page.coordinates }}</span>
             </div>
-        </footer>
-    </main>
+        </header>
+
+        <main class="main-content">
+            <section class="intro">
+                <p class="lead">{{ page.lead }}</p>
+                <p>{{ page.intro | markdownify | remove: '<p>' | remove: '</p>' }}</p>
+            </section>
+
+            <section class="research-areas">
+                <h2>Endeavours</h2>
+                <div class="area-list">
+                    {% for item in site.data.endeavours %}
+                    <div class="area">
+                        <span class="area-number">{{ forloop.index | prepend: '00' | slice: -2, 2 }}</span>
+                        <span class="area-name">{{ item.name }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <div class="prose-cols">
+                <section class="beliefs">
+                    <h2>Foundations</h2>
+                    <p>{{ page.foundations }}</p>
+                </section>
+
+                <section class="personal">
+                    <h2>Otherwise</h2>
+                    <p>{{ page.otherwise | markdownify | remove: '<p>' | remove: '</p>' }}</p>
+                </section>
+            </div>
+
+            <section class="photos">
+                <h2>Elsewhere</h2>
+                <div class="photo-grid">
+                    {% for photo in site.data.photos %}
+                    <figure class="photo-item">
+                        <img src="{{ '/assets/images/' | append: photo.image | relative_url }}" alt="{{ photo.alt }}">
+                        <figcaption>{{ photo.caption }}</figcaption>
+                    </figure>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
+    </div>
 
     <script type="module" src="{{ '/assets/js/molecule.js' | relative_url }}"></script>
 </body>
