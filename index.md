@@ -11,7 +11,7 @@ profile_image: profile.jpg
 
 # Introduction
 lead: I develop statistical learning methods for high-dimensional real world mechanical systems.
-intro: "Current work: designing hardware and variational inference for modeling the [hallmarks of aging](https://www.cell.com/cell/fulltext/S0092-8674(22)01377-0)."
+intro: 'Current work: designing hardware and variational inference for modeling the <a href="https://www.cell.com/cell/fulltext/S0092-8674(22)01377-0" target="_blank" rel="noopener">hallmarks of aging</a>.'
 
 # Foundations
 foundations: >
