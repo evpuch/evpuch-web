@@ -97,7 +97,7 @@ function initMolecule() {
     };
 
     // Helper function to create atom
-    function createAtom(radius, material, position) {
+    function createAtom(radius, material, position, group) {
         const geometry = new THREE.SphereGeometry(radius, 32, 32);
         // Clone the material so each atom can be highlighted independently.
         const mat = material.clone();
@@ -107,6 +107,7 @@ function initMolecule() {
         mesh.userData.baseEmissive = mat.emissive.clone();
         mesh.userData.baseEI = mat.emissiveIntensity;
         mesh.userData.hl = 0;
+        mesh.userData.group = group;
         atomMeshes.push(mesh);
         inner.add(mesh);
         return mesh;
@@ -137,7 +138,7 @@ function initMolecule() {
         { x: 0.15, y: 0.6, z: -0.35 }
     ];
 
-    const coreAtoms = corePositions.map(pos => createAtom(0.5, materials.core, pos));
+    const coreAtoms = corePositions.map(pos => createAtom(0.5, materials.core, pos, 'core'));
 
     // Core bonds
     createBond(corePositions[0], corePositions[1], 0.08);
@@ -152,7 +153,7 @@ function initMolecule() {
     ];
 
     branchA.forEach((pos, i) => {
-        createAtom(0.35 - i * 0.02, materials.major, pos);
+        createAtom(0.35 - i * 0.02, materials.major, pos, 'aging');
         if (i === 0) {
             createBond(corePositions[1], pos, 0.06);
         } else {
@@ -167,7 +168,7 @@ function initMolecule() {
     ];
 
     branchB.forEach((pos, i) => {
-        createAtom(0.32, materials.major, pos);
+        createAtom(0.32, materials.major, pos, 'music');
         if (i === 0) {
             createBond(corePositions[0], pos, 0.06);
         } else {
@@ -183,7 +184,7 @@ function initMolecule() {
     ];
 
     branchC.forEach((pos, i) => {
-        createAtom(0.3, materials.major, pos);
+        createAtom(0.3, materials.major, pos, 'cars');
         if (i === 0) {
             createBond(corePositions[2], pos, 0.06);
         } else {
@@ -201,7 +202,7 @@ function initMolecule() {
     ];
 
     cluster.forEach((pos, i) => {
-        createAtom(0.22, materials.cluster, pos);
+        createAtom(0.22, materials.cluster, pos, 'cooking');
     });
     createBond(corePositions[0], cluster[0], 0.05);
     createBond(cluster[0], cluster[1], 0.04);
@@ -219,7 +220,7 @@ function initMolecule() {
     ];
 
     secondaryA.forEach((pos, i) => {
-        createAtom(0.2, materials.secondary, pos);
+        createAtom(0.2, materials.secondary, pos, 'aging');
     });
     createBond(branchA[1], secondaryA[0], 0.04);
     createBond(branchA[1], secondaryA[1], 0.04);
@@ -233,7 +234,7 @@ function initMolecule() {
         { x: -2.5, y: 1.3, z: -1.7 }
     ];
 
-    secondaryB.forEach(pos => createAtom(0.18, materials.secondary, pos));
+    secondaryB.forEach(pos => createAtom(0.18, materials.secondary, pos, 'music'));
     createBond(branchB[1], secondaryB[0], 0.04);
     createBond(branchB[1], secondaryB[1], 0.04);
 
@@ -245,7 +246,7 @@ function initMolecule() {
         { x: -0.3, y: -1.3, z: -4.0 }
     ];
 
-    secondaryC.forEach(pos => createAtom(0.2, materials.secondary, pos));
+    secondaryC.forEach(pos => createAtom(0.2, materials.secondary, pos, 'cars'));
     createBond(branchC[2], secondaryC[0], 0.04);
     createBond(branchC[2], secondaryC[1], 0.04);
     createBond(branchC[2], secondaryC[2], 0.04);
@@ -264,7 +265,7 @@ function initMolecule() {
             z: ringCenter.z + Math.sin(angle) * 0.3
         };
         ringAtoms.push(pos);
-        createAtom(0.18, materials.ring, pos);
+        createAtom(0.18, materials.ring, pos, 'origins');
     }
 
     for (let i = 0; i < 5; i++) {
@@ -288,7 +289,14 @@ function initMolecule() {
         { x: -1.0, y: -2.3, z: 1.6 }
     ];
 
-    tips.forEach(pos => createAtom(0.12, materials.tiny, pos));
+    // Tip groups follow the branch each tip sprouts from
+    const tipGroups = [
+        'aging', 'aging', 'aging', 'aging', 'aging',
+        'music', 'music',
+        'cars', 'cars', 'cars', 'cars',
+        'cooking'
+    ];
+    tips.forEach((pos, i) => createAtom(0.12, materials.tiny, pos, tipGroups[i]));
 
     // Recenter: offset inner group by its geometric centroid so the molecule
     // sits in the middle of the frame and rotates around its own center.
@@ -320,21 +328,66 @@ function initMolecule() {
         mouseY = (e.clientY / window.innerHeight) * 2 - 1;
     });
 
-    // Hover highlighting via raycasting
+    // Hover highlighting + per-branch blurbs via raycasting
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     let pointerInside = false;
+    let pointerClientX = 0;
+    let pointerClientY = 0;
     const HL_COLOR = new THREE.Color(0x64ffda);
+
+    // Each branch maps to a short blurb — PLACEHOLDER COPY, edit these freely.
+    const BLURBS = {
+        core:    { title: 'Currently', text: 'Deeply, unreasonably in love with pigs. Placeholder — replace me!' },
+        aging:   { title: 'Hot take', text: 'A pig is smarter than your dog and twice as charming.' },
+        music:   { title: 'One day', text: 'The teacup pig I will absolutely, definitely own.' },
+        cars:    { title: 'Small joys', text: 'I name every animal I meet. The cows have full backstories.' },
+        cooking: { title: 'Fair warning', text: 'I add too much of everything. Chaos is the secret ingredient.' },
+        origins: { title: 'Daily thought', text: 'Pigs cannot look up at the sky. I think about this a lot.' }
+    };
+
+    // Popup element, layered over the hero
+    const hero = container.closest('.hero') || container.parentElement;
+    const tip = document.createElement('div');
+    tip.className = 'atom-tip';
+    tip.innerHTML = '<span class="atom-tip-title"></span><span class="atom-tip-text"></span>';
+    if (hero) hero.appendChild(tip);
 
     renderer.domElement.addEventListener('pointermove', (e) => {
         const rect = renderer.domElement.getBoundingClientRect();
         pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        pointerClientX = e.clientX;
+        pointerClientY = e.clientY;
         pointerInside = true;
     });
     renderer.domElement.addEventListener('pointerleave', () => {
         pointerInside = false;
     });
+
+    function showTip(group) {
+        if (!hero) return;
+        if (group && BLURBS[group]) {
+            const b = BLURBS[group];
+            if (tip._group !== group) {
+                tip.querySelector('.atom-tip-title').textContent = b.title;
+                tip.querySelector('.atom-tip-text').textContent = b.text;
+                tip._group = group;
+            }
+            const rect = hero.getBoundingClientRect();
+            const tw = tip.offsetWidth || 220;
+            const th = tip.offsetHeight || 80;
+            let lx = pointerClientX - rect.left + 18;
+            let ly = pointerClientY - rect.top + 18;
+            if (lx + tw > rect.width - 8) lx = pointerClientX - rect.left - tw - 18;
+            if (ly + th > rect.height - 8) ly = rect.height - th - 8;
+            tip.style.transform = `translate(${Math.max(8, lx)}px, ${Math.max(8, ly)}px)`;
+            tip.classList.add('visible');
+        } else {
+            tip.classList.remove('visible');
+            tip._group = null;
+        }
+    }
 
     function updateHover() {
         let hovered = null;
@@ -343,17 +396,18 @@ function initMolecule() {
             const hits = raycaster.intersectObjects(atomMeshes, false);
             if (hits.length) hovered = hits[0].object;
         }
+        const hoveredGroup = hovered ? hovered.userData.group : null;
 
+        // Highlight the whole branch the hovered atom belongs to
         for (const m of atomMeshes) {
-            const target = m === hovered ? 1 : 0;
-            // ease the highlight in/out
+            const target = (hoveredGroup && m.userData.group === hoveredGroup) ? 1 : 0;
             m.userData.hl += (target - m.userData.hl) * 0.15;
             const hl = m.userData.hl;
             if (hl > 0.002) {
                 m.material.color.copy(m.userData.baseColor).lerp(HL_COLOR, hl * 0.5);
                 m.material.emissive.copy(m.userData.baseEmissive).lerp(HL_COLOR, hl * 0.65);
                 m.material.emissiveIntensity = m.userData.baseEI + hl * 0.6;
-                m.scale.setScalar(1 + hl * 0.18);
+                m.scale.setScalar(1 + hl * 0.16);
             } else {
                 m.material.color.copy(m.userData.baseColor);
                 m.material.emissive.copy(m.userData.baseEmissive);
@@ -361,6 +415,8 @@ function initMolecule() {
                 m.scale.setScalar(1);
             }
         }
+
+        showTip(hoveredGroup);
     }
 
     function animate() {
