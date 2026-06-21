@@ -65,11 +65,10 @@ a:hover {
 /* Branch blurb popup */
 .atom-tip {
     position: absolute;
-    top: 50%;
-    right: 40px;
-    transform: translateY(-50%) translateX(14px);
+    top: 0;
+    left: 0;
     width: 280px;
-    max-width: calc(100vw - 64px);
+    max-width: calc(100vw - 48px);
     padding: 16px 18px;
     display: flex;
     flex-direction: column;
@@ -81,27 +80,16 @@ a:hover {
     backdrop-filter: blur(8px);
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.22s ease, transform 0.22s ease;
+    transform: scale(0.95);
+    transform-origin: center;
+    transition: opacity 0.2s ease, transform 0.2s ease;
     z-index: 5;
 }
 
 .atom-tip.visible {
     opacity: 1;
-    transform: translateY(-50%) translateX(0);
+    transform: scale(1);
     pointer-events: auto;
-}
-
-@media (max-width: 700px) {
-    .atom-tip {
-        right: 50%;
-        top: auto;
-        bottom: 28px;
-        transform: translateX(50%) translateY(14px);
-        width: calc(100vw - 48px);
-    }
-    .atom-tip.visible {
-        transform: translateX(50%) translateY(0);
-    }
 }
 
 .atom-tip-img {

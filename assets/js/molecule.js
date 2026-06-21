@@ -386,6 +386,14 @@ function initMolecule() {
                     link.style.display = 'none';
                 }
                 tip._group = group;
+
+                // Pop up at a random spot in the hero, clamped to stay on screen
+                const hr = hero.getBoundingClientRect();
+                const m = 24;
+                const tw = tip.offsetWidth || 280;
+                const th = tip.offsetHeight || 200;
+                tip.style.left = Math.round(m + Math.random() * Math.max(0, hr.width - tw - m * 2)) + 'px';
+                tip.style.top = Math.round(m + Math.random() * Math.max(0, hr.height - th - m * 2)) + 'px';
             }
             tip.classList.add('visible');
         } else {
