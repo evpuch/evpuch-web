@@ -344,11 +344,11 @@ function initMolecule() {
     // Each branch maps to a short blurb — PLACEHOLDER COPY, edit these freely.
     const BLURBS = {
         core:    { title: 'Pigs, obviously', text: "I love pigs with my whole chest. Fun fact: they can be taught to play joystick video games — and they beat some toddlers at it. Brilliant, stubborn, perfect animals." },
-        aging:   { title: 'Useless expertise', text: "I hoard strange facts the way other people hoard receipts — honey never spoils, octopuses have three hearts — and deploy them at dinner, entirely uninvited." },
+        aging:   { title: 'Useless expertise', text: "I have an uncanny memory for the inside of fridges. Open one once and I can tell you, years later, exactly which shelf the mustard lives on. Genuinely my most reliable cognitive talent." },
         music:   { title: 'On repeat', text: "There's always one song I've decided is the greatest ever recorded, and I'll loop it until everyone agrees or quietly leaves. The pick changes weekly." },
         cars:    { title: 'Quiet marvels', text: "A genuine, faintly unreasonable love for catalytic converters — a palm-sized lattice of platinum, palladium and rhodium that turns toxic exhaust into mostly water and CO2. Chemistry doing quiet, beautiful work." },
         cooking: { title: 'Always bubbling', text: "Devoted to fermentation. There's always a jar of something alive on my counter — kimchi, kraut, hot sauce, the occasional experiment I don't mention. Letting microbes do the cooking is the closest thing to magic I know." },
-        origins: { title: 'Time sink', text: "Give me a good map — a transit diagram, a topographic chart, an old nautical one — and I will happily disappear into it for the better part of an hour." }
+        origins: { title: 'Time sink', text: "Give me a good map and I will happily disappear into it — especially urban rail maps. I can lose the better part of an hour comparing how different cities draw and untangle their transit lines." }
     };
 
     // Popup element, layered over the hero
