@@ -344,7 +344,7 @@ function initMolecule() {
     // Each branch maps to a short blurb — PLACEHOLDER COPY, edit these freely.
     const BLURBS = {
         core:    { title: 'Pigs, obviously', text: "I love pigs with my whole chest. Fun fact: they can be taught to play joystick video games — and they beat some toddlers at it. Brilliant, stubborn, perfect animals." },
-        aging:   { title: 'Useless expertise', text: "I have an uncanny memory for the inside of fridges. Open one once and I can tell you, years later, exactly which shelf the mustard lives on. Genuinely my most reliable cognitive talent." },
+        aging:   { title: 'Useless expertise', img: '/assets/images/fridge.jpg', text: "I have an uncanny memory for the inside of fridges. Open one once and I can tell you, years later, exactly which shelf the mustard lives on. (Random fridge, a Connecticut basement, 2026.)" },
         music:   { title: 'On repeat', text: "There's always one song I've decided is the greatest ever recorded, and I'll loop it until everyone agrees or quietly leaves. The pick changes weekly." },
         cars:    { title: 'Quiet marvels', text: "A genuine, faintly unreasonable love for catalytic converters — a palm-sized lattice of platinum, palladium and rhodium that turns toxic exhaust into mostly water and CO2. Chemistry doing quiet, beautiful work." },
         cooking: { title: 'Always bubbling', text: "Devoted to fermentation. There's always a jar of something alive on my counter — kimchi, kraut, hot sauce, the occasional experiment I don't mention. Letting microbes do the cooking is the closest thing to magic I know." },
@@ -355,7 +355,7 @@ function initMolecule() {
     const hero = container.closest('.hero') || container.parentElement;
     const tip = document.createElement('div');
     tip.className = 'atom-tip';
-    tip.innerHTML = '<span class="atom-tip-title"></span><span class="atom-tip-text"></span><span class="atom-tip-hint">Click anywhere to dismiss</span>';
+    tip.innerHTML = '<img class="atom-tip-img" alt="" /><span class="atom-tip-title"></span><span class="atom-tip-text"></span><span class="atom-tip-hint">Click anywhere to dismiss</span>';
     if (hero) hero.appendChild(tip);
 
     renderer.domElement.addEventListener('pointermove', (e) => {
@@ -389,6 +389,14 @@ function initMolecule() {
             if (tip._group !== group) {
                 tip.querySelector('.atom-tip-title').textContent = b.title;
                 tip.querySelector('.atom-tip-text').textContent = b.text;
+                const img = tip.querySelector('.atom-tip-img');
+                if (b.img) {
+                    img.src = b.img;
+                    img.style.display = 'block';
+                } else {
+                    img.removeAttribute('src');
+                    img.style.display = 'none';
+                }
                 tip._group = group;
             }
             const isPinned = pinnedGroup === group;
