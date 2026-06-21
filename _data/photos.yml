@@ -9,3 +9,7 @@
 - image: tiger.jpg
   alt: Tiger
   caption: Chicago Metra, 2025
+
+- image: ocean.jpg
+  alt: Sitting on rocks by the ocean at sunset
+  caption: Coastline, 2025   # TODO: update location/year
