@@ -361,6 +361,48 @@ function initMolecule() {
     // Clear the side panel when the cursor leaves the hero entirely
     if (hero) hero.addEventListener('mouseleave', () => { currentGroup = null; });
 
+    // Project the atoms to screen space to find the molecule's current bounds,
+    // so blurb panels can avoid landing on top of it.
+    const _projV = new THREE.Vector3();
+    function moleculeScreenBox() {
+        const hr = hero.getBoundingClientRect();
+        const cr = renderer.domElement.getBoundingClientRect();
+        const ox = cr.left - hr.left, oy = cr.top - hr.top;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const msh of atomMeshes) {
+            msh.getWorldPosition(_projV).project(camera);
+            const sx = ox + (_projV.x * 0.5 + 0.5) * cr.width;
+            const sy = oy + (1 - (_projV.y * 0.5 + 0.5)) * cr.height;
+            if (sx < minX) minX = sx;
+            if (sx > maxX) maxX = sx;
+            if (sy < minY) minY = sy;
+            if (sy > maxY) maxY = sy;
+        }
+        const pad = 36;
+        return { minX: minX - pad, minY: minY - pad, maxX: maxX + pad, maxY: maxY + pad };
+    }
+
+    function pickTipPosition() {
+        const hr = hero.getBoundingClientRect();
+        const m = 24;
+        const tw = tip.offsetWidth || 280;
+        const th = tip.offsetHeight || 200;
+        const maxL = Math.max(m, hr.width - tw - m);
+        const maxT = Math.max(m, hr.height - th - m);
+        const box = moleculeScreenBox();
+        let best = { left: m, top: m }, bestOverlap = Infinity;
+        for (let i = 0; i < 40; i++) {
+            const left = m + Math.random() * (maxL - m);
+            const top = m + Math.random() * (maxT - m);
+            const ox = Math.max(0, Math.min(left + tw, box.maxX) - Math.max(left, box.minX));
+            const oy = Math.max(0, Math.min(top + th, box.maxY) - Math.max(top, box.minY));
+            const overlap = ox * oy;
+            if (overlap === 0) return { left: Math.round(left), top: Math.round(top) };
+            if (overlap < bestOverlap) { bestOverlap = overlap; best = { left: Math.round(left), top: Math.round(top) }; }
+        }
+        return best;
+    }
+
     function showTip(group) {
         if (!hero) return;
         if (group && BLURBS[group]) {
@@ -387,13 +429,10 @@ function initMolecule() {
                 }
                 tip._group = group;
 
-                // Pop up at a random spot in the hero, clamped to stay on screen
-                const hr = hero.getBoundingClientRect();
-                const m = 24;
-                const tw = tip.offsetWidth || 280;
-                const th = tip.offsetHeight || 200;
-                tip.style.left = Math.round(m + Math.random() * Math.max(0, hr.width - tw - m * 2)) + 'px';
-                tip.style.top = Math.round(m + Math.random() * Math.max(0, hr.height - th - m * 2)) + 'px';
+                // Pop up at a random open spot, biased away from the molecule
+                const pos = pickTipPosition();
+                tip.style.left = pos.left + 'px';
+                tip.style.top = pos.top + 'px';
             }
             tip.classList.add('visible');
         } else {
