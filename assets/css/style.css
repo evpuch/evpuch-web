@@ -115,6 +115,27 @@ a:hover {
     border-color: rgba(100, 255, 218, 0.4);
 }
 
+.atom-tip-link {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    pointer-events: none;
+}
+
+.atom-tip-link::before {
+    content: '♪';
+    font-size: 0.8rem;
+}
+
+/* Make the link clickable only when the popup is pinned (it's static then) */
+.atom-tip.pinned .atom-tip-link {
+    pointer-events: auto;
+}
+
 .atom-tip-hint {
     display: none;
     margin-top: 2px;
