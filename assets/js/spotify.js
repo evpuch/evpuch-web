@@ -4,7 +4,7 @@
 //
 // SETUP: paste the raw URL of your Gist's spotify.json file below. It looks like
 //   https://gist.githubusercontent.com/<username>/<gist-id>/raw/spotify.json
-const GIST_RAW_URL = 'REPLACE_WITH_YOUR_GIST_RAW_URL';
+const GIST_RAW_URL = 'https://gist.githubusercontent.com/evpuch/9657c60e3dc239fd5972dd83d780ced5/raw/spotify.json';
 
 async function loadSpotify() {
   const el = document.getElementById('spotify-bubble');
