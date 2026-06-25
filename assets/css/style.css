@@ -171,6 +171,95 @@ a:hover {
     .scroll-cue { animation: none; }
 }
 
+/* Spotify "now playing" bubble */
+.spotify-bubble {
+    position: absolute;
+    left: 28px;
+    bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 280px;
+    padding: 8px 16px 8px 8px;
+    background: rgba(12, 14, 20, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    color: var(--fg);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 5;
+}
+
+.spotify-bubble.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.spotify-bubble:hover {
+    opacity: 0.85;
+}
+
+.sp-art {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #1a1c22 center / cover no-repeat;
+    box-shadow: inset 0 0 0 1px var(--border), 0 0 0 4px rgba(12, 14, 20, 0.7);
+}
+
+.spotify-bubble.playing .sp-art {
+    animation: sp-spin 5s linear infinite;
+}
+
+@keyframes sp-spin {
+    to { transform: rotate(360deg); }
+}
+
+.sp-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sp-label {
+    font-family: var(--mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.sp-track {
+    font-size: 0.82rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sp-artist {
+    font-size: 0.72rem;
+    color: var(--fg-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 600px) {
+    .spotify-bubble {
+        left: 16px;
+        bottom: 20px;
+        max-width: calc(100vw - 32px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spotify-bubble.playing .sp-art { animation: none; }
+}
+
 /* ================================ */
 /* GRID LAYOUT (BELOW HERO)         */
 /* ================================ */

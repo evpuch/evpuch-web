@@ -21,6 +21,14 @@
                 <path d="M2 2 L11 11 L20 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </a>
+        <a id="spotify-bubble" class="spotify-bubble" target="_blank" rel="noopener" aria-label="Recent Spotify track">
+            <span class="sp-art" aria-hidden="true"></span>
+            <span class="sp-meta">
+                <span class="sp-label">Now playing</span>
+                <span class="sp-track"></span>
+                <span class="sp-artist"></span>
+            </span>
+        </a>
     </section>
 
     <!-- Everything below: side rail + content -->
@@ -91,5 +99,6 @@
     </div>
 
     <script type="module" src="{{ '/assets/js/molecule.js' | relative_url }}"></script>
+    <script defer src="{{ '/assets/js/spotify.js' | relative_url }}"></script>
 </body>
 </html>
