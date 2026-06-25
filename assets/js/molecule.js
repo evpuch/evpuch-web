@@ -337,7 +337,7 @@ function initMolecule() {
 
     // Each branch maps to a short blurb — PLACEHOLDER COPY, edit these freely.
     const BLURBS = {
-        core:    { title: 'Pigs, obviously', text: "I love pigs with my whole chest. Fun fact: they can be taught to play joystick video games — and they beat some toddlers at it. Brilliant, stubborn, perfect animals." },
+        core:    { title: 'Pigs, obviously', img: '/assets/images/pig.jpg', text: "I love pigs with my whole chest. Fun fact: they can be taught to play joystick video games — and they beat some toddlers at it. Brilliant, stubborn, perfect animals." },
         aging:   { title: 'Useless expertise', img: '/assets/images/fridge.jpg', text: "I have an uncanny memory for the inside of fridges. Open one once and I can tell you, years later, exactly which shelf the mustard lives on. (Random fridge, a Connecticut basement, 2026.)" },
         music:   { title: 'On repeat', text: "There's always one song I've decided is the greatest ever recorded, and I'll loop it until everyone agrees or quietly leaves. The pick changes weekly.", link: { href: 'https://open.spotify.com/user/emilka.2006?si=2585f563cebe473e', label: 'My Spotify' } },
         cars:    { title: 'Quiet marvels', text: "A genuine, faintly unreasonable love for catalytic converters — a palm-sized lattice of platinum, palladium and rhodium that turns toxic exhaust into mostly water and CO2. Chemistry doing quiet, beautiful work." },
