@@ -202,7 +202,7 @@ function initMolecule() {
     ];
 
     cluster.forEach((pos, i) => {
-        createAtom(0.22, materials.cluster, pos, 'cooking');
+        createAtom(0.22, materials.cluster, pos, 'origins');
     });
     createBond(corePositions[0], cluster[0], 0.05);
     createBond(cluster[0], cluster[1], 0.04);
@@ -294,7 +294,7 @@ function initMolecule() {
         'aging', 'aging', 'aging', 'aging', 'aging',
         'music', 'music',
         'cars', 'cars', 'cars', 'cars',
-        'cooking'
+        'origins'
     ];
     tips.forEach((pos, i) => createAtom(0.12, materials.tiny, pos, tipGroups[i]));
 
@@ -340,8 +340,7 @@ function initMolecule() {
         core:    { title: 'Pigs, obviously', img: '/assets/images/pig.jpg', text: "I love pigs with my whole chest. Fun fact: they can be taught to play joystick video games — and they beat some toddlers at it. Brilliant, stubborn, perfect animals." },
         aging:   { title: 'Useless expertise', img: '/assets/images/fridge.jpg', text: "I have an uncanny memory for the inside of fridges. Open one once and I can tell you, years later, exactly which shelf the mustard lives on. (Random fridge, a Connecticut basement, 2026.)" },
         music:   { title: 'On repeat', text: "There's always one song I've decided is the greatest ever recorded, and I'll loop it until everyone agrees or quietly leaves. The pick changes weekly.", link: { href: 'https://open.spotify.com/user/emilka.2006?si=2585f563cebe473e', label: 'My Spotify' } },
-        cars:    { title: 'Quiet marvels', text: "A genuine, faintly unreasonable love for catalytic converters — a palm-sized lattice of platinum, palladium and rhodium that turns toxic exhaust into mostly water and CO2. Chemistry doing quiet, beautiful work." },
-        cooking: { title: 'Always bubbling', img: '/assets/images/ferment.jpg', imgPos: 'center 26%', text: "Devoted to fermentation. There's always a jar of something alive on my counter — kimchi, kraut, hot sauce, the occasional experiment I don't mention. Letting microbes do the cooking is the closest thing to magic I know. (A jar of homemade pickles in Glacier National Park — my favorite park!!)" },
+        cars:    { title: 'Always bubbling', img: '/assets/images/ferment.jpg', imgPos: 'center 26%', text: "Devoted to fermentation. There's always a jar of something alive on my counter — kimchi, kraut, hot sauce, the occasional experiment I don't mention. Letting microbes do the cooking is the closest thing to magic I know. (A jar of homemade pickles in Glacier National Park — my favorite park!!)" },
         origins: { title: 'Time sink', img: '/assets/images/map.jpg', text: "Give me a good map and I will happily disappear into it — especially urban rail maps. I can lose the better part of an hour comparing how different cities draw and untangle their transit lines. (Caught communing with the Montréal Métro.)" }
     };
 
