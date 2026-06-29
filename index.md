@@ -4,9 +4,9 @@ title: Emilka Puchalski
 
 # Identity
 author_name: Emilka Puchalski
-department: Math, Chemical & Biological Engineering, and CS
+department: Math, Chemical & Biological Engineering, and Spanish
 school: Princeton University
-origin: Warsaw / Chicago / SF
+origin: Warsaw / Chicago
 profile_image: profile.jpg
 
 # Introduction
