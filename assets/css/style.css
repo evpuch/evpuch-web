@@ -249,9 +249,12 @@ a:hover {
 }
 
 @media (max-width: 600px) {
+    /* Move the now-playing bubble to the top so it clears the centered
+       scroll cue at the bottom. */
     .spotify-bubble {
         left: 16px;
-        bottom: 20px;
+        top: 16px;
+        bottom: auto;
         max-width: calc(100vw - 32px);
     }
 }
