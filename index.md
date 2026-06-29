@@ -10,7 +10,7 @@ origin: Warsaw / Chicago
 profile_image: profile.jpg
 
 # Introduction
-lead: I develop mathematical learning methods for real world systems.
+lead: I develop mathematical methods for understand real world systems.
 intro: 'Current work: thinking about the <a href="https://www.cell.com/cell/fulltext/S0092-8674(22)01377-0" target="_blank" rel="noopener">hallmarks of aging</a>.'
 
 # Foundations
