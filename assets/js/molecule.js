@@ -337,7 +337,7 @@ function initMolecule() {
 
     // Each branch maps to a short blurb — PLACEHOLDER COPY, edit these freely.
     const BLURBS = {
-        core:    { title: 'Pigs, obviously', img: '/assets/images/pig.jpg', text: "I love pigs with my whole chest. Fun fact: they can be taught to play joystick video games — and they beat some toddlers at it. Brilliant, stubborn, perfect animals. (A few of my pig stuffed animals, 2008.)" },
+        core:    { title: 'Pigs, obviously', img: '/assets/images/pig.jpg', text: "I love pigs! They're very clean animals, but they do not have sweat glands, hence they're rolling in mud. (A few of my pig stuffed animals from 2008 — I've always been a fan.)" },
         aging:   { title: 'Useless expertise', img: '/assets/images/fridge.jpg', text: "I have an uncanny memory for the inside of fridges. Open one once and I can tell you, years later, exactly which shelf the mustard lives on. (Random fridge, a Connecticut basement, 2026.)" },
         music:   { title: 'On repeat', text: "There's always one song I've decided is the greatest ever recorded, and I'll loop it until everyone agrees or quietly leaves. The pick changes weekly.", link: { href: 'https://open.spotify.com/user/emilka.2006?si=2585f563cebe473e', label: 'My Spotify' } },
         cars:    { title: 'Always bubbling', img: '/assets/images/ferment.jpg', imgPos: 'center 26%', text: "Devoted to fermentation. There's always a jar of something alive on my counter — kimchi, kraut, hot sauce, the occasional experiment I don't mention. Letting microbes do the cooking is the closest thing to magic I know. (A jar of homemade pickles in Glacier National Park — my favorite park!!)" },
