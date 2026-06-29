@@ -10,8 +10,8 @@ origin: Warsaw / Chicago
 profile_image: profile.jpg
 
 # Introduction
-lead: I develop statistical learning methods for high-dimensional real world mechanical systems.
-intro: 'Current work: designing hardware and variational inference for modeling the <a href="https://www.cell.com/cell/fulltext/S0092-8674(22)01377-0" target="_blank" rel="noopener">hallmarks of aging</a>.'
+lead: I develop mathematical learning methods for real world systems.
+intro: 'Current work: thinking about the <a href="https://www.cell.com/cell/fulltext/S0092-8674(22)01377-0" target="_blank" rel="noopener">hallmarks of aging</a>.'
 
 # Foundations
 foundations: >
@@ -23,10 +23,9 @@ foundations: >
 # Otherwise
 otherwise: >
   DJ at <a href="https://wprb.com" target="_blank" rel="noopener">WPRB 103.3</a>. Unreasonable enthusiasm for catalytic
-  converters. I cook often and aggressively—shakshuka with too much cumin.
+  converters. I cook often and aggressively, especially shakshuka with too much cumin.
   Originally from Poland and the US.
 
 # Footer
 copyright: evpuch 2026
-coordinates: 52.2297° N, 21.0122° E
 ---
