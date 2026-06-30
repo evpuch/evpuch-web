@@ -17,7 +17,7 @@ async function loadSpotify() {
     if (!d || !d.title) return; // nothing to show yet
 
     el.querySelector('.sp-art').style.backgroundImage = d.albumArt ? `url("${d.albumArt}")` : '';
-    el.querySelector('.sp-label').textContent = d.isPlaying ? 'Now playing' : 'Last played';
+    el.querySelector('.sp-label').textContent = d.isPlaying ? 'Live from my Spotify' : 'Last played';
     el.querySelector('.sp-track').textContent = d.title;
     el.querySelector('.sp-artist').textContent = d.artist || '';
     el.href = d.url || '#';

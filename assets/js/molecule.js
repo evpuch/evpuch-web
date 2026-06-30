@@ -344,6 +344,9 @@ function initMolecule() {
         origins: { title: 'Maps galore', img: '/assets/images/map.jpg', text: "Give me a good map and I will happily disappear into it, especially urban rail maps. I gte lost in untangling and criticizing transit lines. (Caught communing with the Montréal Métro.)" }
     };
 
+    // Preload blurb images so a popup never appears before its photo is ready
+    Object.values(BLURBS).forEach(b => { if (b.img) { const im = new Image(); im.src = b.img; } });
+
     // Popup element, layered over the hero
     const hero = container.closest('.hero') || container.parentElement;
     const tip = document.createElement('div');
@@ -411,12 +414,17 @@ function initMolecule() {
                 tip.querySelector('.atom-tip-text').textContent = b.text;
                 const img = tip.querySelector('.atom-tip-img');
                 if (b.img) {
-                    img.src = b.img;
                     img.style.objectPosition = b.imgPos || 'center';
                     img.style.display = 'block';
+                    tip._imgReady = false;
+                    img.onload = () => { if (tip._group === group) tip._imgReady = true; };
+                    img.onerror = () => { if (tip._group === group) tip._imgReady = true; };
+                    img.src = b.img;
+                    if (img.complete && img.naturalWidth) tip._imgReady = true;
                 } else {
                     img.removeAttribute('src');
                     img.style.display = 'none';
+                    tip._imgReady = true;
                 }
                 const link = tip.querySelector('.atom-tip-link');
                 if (b.link) {
@@ -434,7 +442,9 @@ function initMolecule() {
                 tip.style.left = pos.left + 'px';
                 tip.style.top = pos.top + 'px';
             }
-            tip.classList.add('visible');
+            // Only reveal the popup once its photo has loaded
+            if (tip._imgReady) tip.classList.add('visible');
+            else tip.classList.remove('visible');
         } else {
             tip.classList.remove('visible');
             tip._group = null;
