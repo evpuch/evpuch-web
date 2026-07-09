@@ -13,6 +13,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 3 # fail fast instead of hanging if an API call stalls
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

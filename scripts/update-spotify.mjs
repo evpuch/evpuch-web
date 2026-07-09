@@ -24,6 +24,7 @@ async function getAccessToken() {
       grant_type: 'refresh_token',
       refresh_token: SPOTIFY_REFRESH_TOKEN,
     }),
+    signal: AbortSignal.timeout(10000),
   });
   if (!res.ok) throw new Error(`Token request failed: ${res.status} ${await res.text()}`);
   return (await res.json()).access_token;
@@ -45,14 +46,14 @@ async function getTrack(token) {
   const auth = { headers: { Authorization: `Bearer ${token}` } };
 
   // 1) Currently playing?
-  let r = await fetch('https://api.spotify.com/v1/me/player/currently-playing', auth);
+  let r = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { ...auth, signal: AbortSignal.timeout(10000) });
   if (r.status === 200) {
     const d = await r.json();
     if (d && d.item) return shape(d.item, d.is_playing);
   }
 
   // 2) Fall back to most recently played
-  r = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=1', auth);
+  r = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=1', { ...auth, signal: AbortSignal.timeout(10000) });
   if (r.status === 200) {
     const d = await r.json();
     if (d.items && d.items.length) return shape(d.items[0].track, false);
@@ -71,6 +72,7 @@ const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
     Accept: 'application/vnd.github+json',
   },
   body: JSON.stringify({ files: { 'spotify.json': { content: JSON.stringify(track, null, 2) } } }),
+  signal: AbortSignal.timeout(10000),
 });
 if (!res.ok) throw new Error(`Gist update failed: ${res.status} ${await res.text()}`);
 
