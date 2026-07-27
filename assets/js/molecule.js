@@ -416,14 +416,18 @@ function initMolecule() {
         const held = e.timeStamp - tapStart.t;
         tapStart = null;
         if (drift > TAP_SLOP || held > TAP_MS) return; // that was a scroll
-        // Tapping an atom opens its blurb; tapping empty space closes it.
-        currentGroup = pickGroupAt(e.clientX, e.clientY);
+        // Tap an atom to open its blurb, the same branch again to close it,
+        // another branch to switch, empty space to close.
+        const picked = pickGroupAt(e.clientX, e.clientY);
+        currentGroup = (picked && picked === currentGroup) ? null : picked;
     });
 
-    // Dismiss: the explicit close button, or a tap anywhere on the panel that
-    // isn't the link.
-    tip.addEventListener('click', (e) => {
-        if (e.target.closest('.atom-tip-link')) return;
+    // Dismiss: the close button, or a tap anywhere on the panel that isn't the
+    // link. Bound to pointerup rather than click on purpose — iOS only
+    // synthesises click on elements it considers clickable, so a tap on the
+    // panel's own text would otherwise never fire one.
+    tip.addEventListener('pointerup', (e) => {
+        if (e.target.closest('.atom-tip-link')) return; // let the link navigate
         currentGroup = null;
     });
 
@@ -532,6 +536,10 @@ function initMolecule() {
                 // stayed selected (rotating a phone, resizing a window).
                 placeTip();
             }
+            // Show the close button whenever the blurb was opened by touch.
+            // More reliable than a (pointer: coarse) media query, which misses
+            // hybrid laptops and browser device-emulation.
+            tip.classList.toggle('by-touch', lastPointerType !== 'mouse');
             // Only reveal the popup once its photo has loaded
             if (tip._imgReady) tip.classList.add('visible');
             else tip.classList.remove('visible');

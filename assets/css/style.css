@@ -135,21 +135,26 @@ a:hover {
 .atom-tip-close {
     display: none;
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 30px;
-    height: 30px;
+    top: 4px;
+    right: 4px;
+    width: 44px;      /* full-size touch target, not just the glyph */
+    height: 44px;
     align-items: center;
     justify-content: center;
     padding: 0;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     line-height: 1;
     color: var(--fg);
-    background: rgba(12, 14, 20, 0.75);
+    background: rgba(12, 14, 20, 0.82);
     border: 1px solid var(--border);
     border-radius: 50%;
     cursor: pointer;
+    z-index: 1;
 }
+
+/* JS adds .by-touch when the blurb was opened by a finger; the media query is
+   a fallback for browsers that report a coarse pointer up front. */
+.atom-tip.by-touch .atom-tip-close { display: flex; }
 
 @media (pointer: coarse) {
     .atom-tip-close { display: flex; }
