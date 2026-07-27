@@ -19,7 +19,9 @@ function initMolecule() {
         alpha: true
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    // Cap the pixel ratio: phones report 3x, which quadruples the fragment
+    // count for no visible gain and makes the spin stutter.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
@@ -351,17 +353,86 @@ function initMolecule() {
     const hero = container.closest('.hero') || container.parentElement;
     const tip = document.createElement('div');
     tip.className = 'atom-tip';
-    tip.innerHTML = '<img class="atom-tip-img" alt="" /><span class="atom-tip-title"></span><span class="atom-tip-text"></span><a class="atom-tip-link" target="_blank" rel="noopener"></a>';
+    tip.innerHTML = '<button class="atom-tip-close" type="button" aria-label="Close">&times;</button><img class="atom-tip-img" alt="" /><span class="atom-tip-title"></span><span class="atom-tip-text"></span><a class="atom-tip-link" target="_blank" rel="noopener"></a>';
     if (hero) hero.appendChild(tip);
 
+    // --- Input: hover on mouse, tap on touch ---------------------------
+    // Touch never produces a hover, so taps pick a branch outright. A finger
+    // is also blunt and a swipe that starts on the canvas is a scroll, not a
+    // tap — both are handled below.
+    const TAP_SLOP = 12;       // px of finger drift still counted as a tap
+    const TAP_MS = 700;        // longer than this is a press, not a tap
+    const TOUCH_HIT_PX = 44;   // forgiving hit radius around each atom
+    let lastPointerType = 'mouse';
+    let tapStart = null;
+
+    const _pickV2 = new THREE.Vector2();
+    const _pickV3 = new THREE.Vector3();
+
+    // Which branch is under this screen point? Exact raycast first; if the
+    // tap landed in empty space, fall back to the nearest atom within
+    // TOUCH_HIT_PX, lightly biased toward atoms facing the camera so you get
+    // the one that *looks* on top. Returns null if nothing is close.
+    function pickGroupAt(clientX, clientY) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        _pickV2.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+        _pickV2.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(_pickV2, camera);
+        const hits = raycaster.intersectObjects(atomMeshes, false);
+        if (hits.length) return hits[0].object.userData.group;
+
+        let best = null, bestScore = TOUCH_HIT_PX;
+        for (const m of atomMeshes) {
+            m.getWorldPosition(_pickV3).project(camera);
+            if (_pickV3.z > 1) continue; // behind the camera
+            const sx = rect.left + (_pickV3.x * 0.5 + 0.5) * rect.width;
+            const sy = rect.top + (1 - (_pickV3.y * 0.5 + 0.5)) * rect.height;
+            const score = Math.hypot(sx - clientX, sy - clientY) + (_pickV3.z + 1) * 6;
+            if (score < bestScore) { bestScore = score; best = m.userData.group; }
+        }
+        return best;
+    }
+
     renderer.domElement.addEventListener('pointermove', (e) => {
+        lastPointerType = e.pointerType;
+        // A moving finger is a scroll gesture — don't let it churn the selection.
+        if (e.pointerType !== 'mouse') return;
         const rect = renderer.domElement.getBoundingClientRect();
         pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
         pointerMoved = true;
     });
-    // Clear the side panel when the cursor leaves the hero entirely
-    if (hero) hero.addEventListener('mouseleave', () => { currentGroup = null; });
+
+    renderer.domElement.addEventListener('pointerdown', (e) => {
+        lastPointerType = e.pointerType;
+        if (e.pointerType === 'mouse') return;
+        tapStart = { x: e.clientX, y: e.clientY, t: e.timeStamp };
+    });
+    // The browser fires pointercancel once it claims the gesture for scrolling.
+    renderer.domElement.addEventListener('pointercancel', () => { tapStart = null; });
+    renderer.domElement.addEventListener('pointerup', (e) => {
+        if (e.pointerType === 'mouse' || !tapStart) return;
+        const drift = Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y);
+        const held = e.timeStamp - tapStart.t;
+        tapStart = null;
+        if (drift > TAP_SLOP || held > TAP_MS) return; // that was a scroll
+        // Tapping an atom opens its blurb; tapping empty space closes it.
+        currentGroup = pickGroupAt(e.clientX, e.clientY);
+    });
+
+    // Dismiss: the explicit close button, or a tap anywhere on the panel that
+    // isn't the link.
+    tip.addEventListener('click', (e) => {
+        if (e.target.closest('.atom-tip-link')) return;
+        currentGroup = null;
+    });
+
+    // Clear the side panel when the cursor leaves the hero entirely. Guarded
+    // on input type: touch fires compatibility mouse events that would
+    // otherwise close the panel the instant you lift your finger.
+    if (hero) hero.addEventListener('mouseleave', () => {
+        if (lastPointerType === 'mouse') currentGroup = null;
+    });
 
     // Project the atoms to screen space to find the molecule's current bounds,
     // so blurb panels can avoid landing on top of it.
@@ -405,6 +476,23 @@ function initMolecule() {
         return best;
     }
 
+    // On a narrow screen the molecule fills the width, so a random spot would
+    // almost always land on top of it. Dock the panel to the bottom instead.
+    const narrow = window.matchMedia('(max-width: 600px)'); // matches the CSS breakpoint
+
+    function placeTip() {
+        if (narrow.matches) {
+            tip.classList.add('docked');
+            tip.style.left = '';
+            tip.style.top = '';
+            return;
+        }
+        tip.classList.remove('docked');
+        const pos = pickTipPosition();
+        tip.style.left = pos.left + 'px';
+        tip.style.top = pos.top + 'px';
+    }
+
     function showTip(group) {
         if (!hero) return;
         if (group && BLURBS[group]) {
@@ -438,9 +526,11 @@ function initMolecule() {
                 tip._group = group;
 
                 // Pop up at a random open spot, biased away from the molecule
-                const pos = pickTipPosition();
-                tip.style.left = pos.left + 'px';
-                tip.style.top = pos.top + 'px';
+                placeTip();
+            } else if (narrow.matches !== tip.classList.contains('docked')) {
+                // Viewport crossed the dock breakpoint while the same branch
+                // stayed selected (rotating a phone, resizing a window).
+                placeTip();
             }
             // Only reveal the popup once its photo has loaded
             if (tip._imgReady) tip.classList.add('visible');
@@ -449,6 +539,7 @@ function initMolecule() {
             tip.classList.remove('visible');
             tip._group = null;
         }
+        if (hero) hero.classList.toggle('tip-open', tip.classList.contains('visible'));
     }
 
     function updateHover() {
@@ -509,14 +600,27 @@ function initMolecule() {
     animate();
 
     // Handle resize
-    window.addEventListener('resize', () => {
+    function handleResize() {
         const newWidth = container.clientWidth;
         const newHeight = container.clientHeight;
+        if (!newWidth || !newHeight) return; // not laid out yet
 
         camera.aspect = newWidth / newHeight;
         fitCamera();
         renderer.setSize(newWidth, newHeight);
-    });
+        // A rotated phone can cross the dock threshold while a blurb is open
+        if (tip._group) placeTip();
+    }
+
+    // Watch the container, not the window: the hero can settle its size after
+    // this script runs (late layout, font swap, mobile URL bar). A canvas built
+    // at 0x0 would otherwise stay blank until the user happened to rotate the
+    // phone — no window 'resize' ever fires for that first layout.
+    if (window.ResizeObserver) {
+        new ResizeObserver(handleResize).observe(container);
+    } else {
+        window.addEventListener('resize', handleResize);
+    }
 }
 
 // Initialize when DOM is ready

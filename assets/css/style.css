@@ -131,6 +131,30 @@ a:hover {
     font-size: 0.8rem;
 }
 
+/* Touch has no "move away to dismiss", so give it an explicit close control */
+.atom-tip-close {
+    display: none;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--fg);
+    background: rgba(12, 14, 20, 0.75);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+@media (pointer: coarse) {
+    .atom-tip-close { display: flex; }
+}
+
 .hero-molecule canvas {
     display: block;
     margin: 0 auto;
@@ -155,6 +179,11 @@ a:hover {
 
 .scroll-cue svg {
     color: var(--accent);
+}
+
+/* Fade the cue out while a docked blurb occupies the bottom of the hero */
+.scroll-cue {
+    transition: opacity 0.2s ease;
 }
 
 .scroll-cue:hover {
@@ -256,6 +285,26 @@ a:hover {
         top: 16px;
         bottom: auto;
         max-width: calc(100vw - 32px);
+    }
+
+    /* The molecule fills a narrow screen, so a randomly placed blurb would
+       always cover it. Dock it to the bottom of the hero instead — JS adds
+       .docked and drops the inline left/top it uses on desktop. */
+    .atom-tip.docked {
+        left: 16px;
+        right: 16px;
+        top: auto;
+        bottom: 16px;
+        width: auto;
+        max-width: none;
+    }
+
+    .atom-tip.docked .atom-tip-img { height: 120px; }
+
+    /* The docked blurb sits where the cue is */
+    .hero.tip-open .scroll-cue {
+        opacity: 0;
+        pointer-events: none;
     }
 }
 
