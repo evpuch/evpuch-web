@@ -42,7 +42,14 @@ favicon links — keep the two in sync.
 
 ## The molecule (`assets/js/molecule.js`)
 - Rotating Three.js molecule; camera auto-fits (fills height in landscape, fits
-  width in portrait, recomputed on resize). Container id `#molecule-container`.
+  width in portrait). Container id `#molecule-container`.
+- **Sizing:** `fitCamera()` computes `baseCamZ` (the "whole hero to itself"
+  framing); `updateLayout()` then decides the actual `targetCamZ` / `targetShiftY`,
+  which the render loop eases toward. Resize is watched with a **`ResizeObserver`
+  on the container, not `window.resize`** — the hero can settle its size after the
+  script runs (late layout, font swap, mobile URL bar) and a canvas built at 0×0
+  would otherwise stay blank until the user rotated the phone. Pixel ratio is
+  **capped at 2** (phones report 3 for 2.25× the fragment cost).
 - Atoms are tagged with a **group**; each group maps to a **blurb**. Groups &
   current content (note: the internal group *keys* no longer match the topic —
   content was rearranged):
@@ -51,18 +58,48 @@ favicon links — keep the two in sync.
   - `music` → **Emo/Spotify** ("On repeat", `music.jpg`, has a `link` to Spotify)
   - `cars` → **Fermentation** ("Always bubbling", `ferment.jpg`, `imgPos: 'center 26%'`)
   - `origins` → **Maps** ("Maps galore", `map.jpg`; also covers the dense cluster atoms)
-- **Interaction:** molecule spins continuously. Hovering an atom lights up its
-  whole branch (teal) and shows a blurb **panel at a random spot** in the hero
-  (biased away from the molecule via `moleculeScreenBox()`/`pickTipPosition()`).
+- **Mouse:** molecule spins continuously. Hovering an atom lights up its whole
+  branch (teal) and shows a blurb **panel at a random spot** in the hero (biased
+  away from the molecule via `moleculeScreenBox()`/`pickTipPosition()`).
   Selection only changes when the cursor *moves* (so spin doesn't churn it);
   panel clears on hero `mouseleave`. Blurb images are **preloaded** and the
   panel is **gated on image load** (`tip._imgReady`) so it never flashes empty.
+- **Touch** (a tap fires `pointerdown`/`pointerup` with no `pointermove`, so the
+  hover path never runs — don't "simplify" these back into one path):
+  - Tap an atom to open, the **same branch again** to close, another branch to
+    switch, empty space to close.
+  - Taps get a **44px hit radius** (`TOUCH_HIT_PX`) around each atom, slightly
+    depth-biased; an exact raycast still wins. A fingertip can't hit a
+    0.12-unit sphere.
+  - A swipe stays a scroll: drift (`TAP_SLOP`) / duration (`TAP_MS`) thresholds
+    plus `pointercancel`, which fires when the browser claims the gesture.
+  - Hero `mouseleave` is **guarded on `lastPointerType`** — touch fires
+    compatibility mouse events that would otherwise close the panel on
+    finger-up.
+  - Dismissal is bound to **`pointerup`, not `click`**: iOS only synthesises
+    `click` for elements it deems clickable, so a tap on the panel's own text
+    produced no click and the blurb stayed put. The link keeps an exception so
+    it still navigates.
+  - The close button shows via a **`.by-touch` class** set when the blurb was
+    opened by a finger. `@media (pointer: coarse)` alone missed hybrid laptops
+    and device-emulation, where the button never appeared. It's a 44px target.
+- **Mobile layout (≤600px, must match the `narrow` matchMedia in JS):** the
+  blurb **docks to the bottom** of the hero instead of landing at random, which
+  would always cover the molecule on a narrow screen, and the scroll cue fades
+  (`.hero.tip-open`). `updateLayout()` then gives the molecule the band the panel
+  isn't using: it **slides up** to sit centred there, and only if it still won't
+  fit does the camera back off to shrink it. Both ease, and both restore on
+  close. The band is measured from the panel's real height, and the molecule's
+  extent comes from its **bounding sphere** so it doesn't wobble while spinning.
 - A blurb = `{ title, img, imgPos?, text, link? }`. `link` = `{ href, label }`
   (rendered clickable; panel is interactive when visible).
-- Dev note: the headless preview throttles `requestAnimationFrame` when the tab
-  is hidden, so the animation loop barely runs there. During development a temp
-  `window.__t.show(group)` hook was added to drive frames for screenshots, then
-  removed. Do the same if you need to screenshot a popup.
+- Dev note: the headless preview runs the tab **hidden**, which throttles
+  `requestAnimationFrame` *and* `ResizeObserver` delivery — the animation loop
+  barely runs, and a `resize_window` mid-session may not resize the canvas
+  (reload at the target size instead). Add a temp `window.__t` hook exposing
+  `frame()`/`pick()`/`tap()` to drive frames and simulate touch, then **remove it
+  before committing**. Simulate taps with `PointerEvent`s only — dispatching a
+  synthetic `click` hides exactly the iOS bug described above.
 
 ## Spotify "now playing" bubble
 Static site can't hold Spotify secrets, so a **GitHub Action** does the fetching
@@ -89,7 +126,18 @@ Multi-format for cross-browser reliability (Safari ignores SVG-only and requests
   regenerate by drawing the same atoms/bonds/gradient if you change the SVG).
 - Links live in both layouts with `?v=N` cache-busting — **bump `?v=` when you
   change the icon**, or browsers keep the old one. Safari caches favicons very
-  aggressively (clear via Settings → Privacy → Manage Website Data).
+  aggressively (clear via Settings → Privacy → Manage Website Data). This one is
+  still a **manual** number, unlike CSS/JS below (icons change rarely, and
+  refetching them every deploy isn't worth it).
+
+## Asset cache-busting
+`style.css`, `molecule.js` and `spotify.js` are linked with
+`?v={{ site.time | date: '%s' }}` in both layouts — the **build timestamp**, so
+every Netlify deploy gets a fresh URL automatically and nobody has to remember to
+bump anything. Before this, Safari would happily serve a stale `molecule.js`
+after a deploy and the site looked unchanged. Cost is re-downloading ~20KB per
+deploy, which is nothing. If you ever want it to change only on real edits,
+swap in a hand-bumped `site.assets_version` from `_config.yml`.
 
 ## Conventions / gotchas
 - **Phone photos are usually sideways (EXIF).** Bake upright with Pillow:
