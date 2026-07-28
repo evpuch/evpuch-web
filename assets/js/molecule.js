@@ -311,15 +311,25 @@ function initMolecule() {
     // the wide molecule never clips at the sides.
     const radius = bbox.getBoundingSphere(new THREE.Sphere()).radius;
 
+    // Distance the molecule is framed at with the whole hero to itself. A
+    // docked blurb takes the bottom of the hero on mobile; updateLayout()
+    // slides the molecule up into what's left, and shrinks it only if it
+    // still won't fit. Both are eased in the render loop.
+    let baseCamZ = camera.position.z;
+    let targetCamZ = baseCamZ;
+    let targetShiftY = 0;
+
     function fitCamera() {
         const vFov = (camera.fov * Math.PI) / 180;
         const distV = radius / Math.sin(vFov / 2);
         const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
         const distH = radius / Math.sin(hFov / 2);
-        camera.position.z = Math.max(distV * 0.82, distH);
+        baseCamZ = Math.max(distV * 0.82, distH);
         camera.updateProjectionMatrix();
     }
     fitCamera();
+    camera.position.z = baseCamZ;
+    targetCamZ = baseCamZ;
 
     // Animation
     let mouseX = 0;
@@ -497,6 +507,48 @@ function initMolecule() {
         tip.style.top = pos.top + 'px';
     }
 
+    // Give the molecule the slice of hero the docked blurb isn't using, so it
+    // stays fully visible instead of hiding behind the panel. Only ever runs
+    // for a docked (mobile) blurb — desktop keeps its aggressive full-height
+    // framing untouched. Reads layout, so call it on state changes, not every
+    // frame.
+    function updateLayout(snap) {
+        const docked = tip._group && tip.classList.contains('docked');
+        if (!docked) {
+            targetCamZ = baseCamZ;
+            targetShiftY = 0;
+        } else {
+            const ch = renderer.domElement.clientHeight || container.clientHeight || 1;
+            const tanV = Math.tan((camera.fov * Math.PI) / 180 / 2);
+            const cr = renderer.domElement.getBoundingClientRect();
+            const tr = tip.getBoundingClientRect();
+
+            // Free band, in px down from the top of the canvas
+            const bandTop = 8;
+            const bandBottom = Math.max(bandTop + 80, (tr.top - cr.top) - 12);
+            const bandH = bandBottom - bandTop;
+
+            // Half-height the molecule projects to. Uses the bounding sphere,
+            // so it doesn't wobble as the molecule spins.
+            let dist = baseCamZ;
+            let halfPx = (radius * (ch / 2)) / (dist * tanV);
+            if (halfPx * 2 > bandH) {           // still too tall — back off
+                dist *= (halfPx * 2) / bandH;
+                halfPx = (radius * (ch / 2)) / (dist * tanV);
+            }
+            targetCamZ = dist;
+
+            // Slide it so it sits centred in the band
+            const worldPerPx = (2 * dist * tanV) / ch;
+            targetShiftY = (ch / 2 - (bandTop + bandH / 2)) * worldPerPx;
+        }
+
+        if (snap) {
+            camera.position.z = targetCamZ;
+            molecule.position.y = targetShiftY;
+        }
+    }
+
     function showTip(group) {
         if (!hero) return;
         if (group && BLURBS[group]) {
@@ -531,10 +583,12 @@ function initMolecule() {
 
                 // Pop up at a random open spot, biased away from the molecule
                 placeTip();
+                updateLayout();
             } else if (narrow.matches !== tip.classList.contains('docked')) {
                 // Viewport crossed the dock breakpoint while the same branch
                 // stayed selected (rotating a phone, resizing a window).
                 placeTip();
+                updateLayout();
             }
             // Show the close button whenever the blurb was opened by touch.
             // More reliable than a (pointer: coarse) media query, which misses
@@ -544,8 +598,10 @@ function initMolecule() {
             if (tip._imgReady) tip.classList.add('visible');
             else tip.classList.remove('visible');
         } else {
+            const wasOpen = tip._group !== null;
             tip.classList.remove('visible');
             tip._group = null;
+            if (wasOpen) updateLayout(); // hand the hero back to the molecule
         }
         if (hero) hero.classList.toggle('tip-open', tip.classList.contains('visible'));
     }
@@ -598,6 +654,10 @@ function initMolecule() {
         molecule.rotation.y += mouseX * 0.002;
         molecule.rotation.x += mouseY * 0.001;
 
+        // Ease toward the framing updateLayout() asked for
+        camera.position.z += (targetCamZ - camera.position.z) * 0.12;
+        molecule.position.y += (targetShiftY - molecule.position.y) * 0.12;
+
         // Keep world matrices current so raycasting tracks the rotating atoms
         scene.updateMatrixWorld();
         updateHover();
@@ -618,6 +678,7 @@ function initMolecule() {
         renderer.setSize(newWidth, newHeight);
         // A rotated phone can cross the dock threshold while a blurb is open
         if (tip._group) placeTip();
+        updateLayout(true); // snap on resize; only opening a blurb eases
     }
 
     // Watch the container, not the window: the hero can settle its size after
