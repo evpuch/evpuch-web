@@ -7,7 +7,7 @@ author_name: Emilka Puchalski
 department: Math, Chemical & Biological Engineering, and Spanish
 school: Princeton University
 origin: Warsaw / Chicago
-profile_image: profile.jpg
+profile_image: profile-chicago.jpg
 
 # Introduction
 lead: I develop mathematical methods for understanding real world systems.

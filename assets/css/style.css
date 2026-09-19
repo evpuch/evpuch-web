@@ -373,6 +373,23 @@ a:hover {
     filter: grayscale(0%);
 }
 
+/* Above 900px the rail is locked to 100vh, so a tall portrait photo pushes the
+   links and footer out of view on short laptops. Cap it to the height actually
+   left over: 548px = 444px of name/affiliation/links/footer + 104px of rail
+   padding. The width follows to keep the aspect, so it stays uncropped. */
+@media (min-width: 901px) {
+    .profile-photo {
+        /* width:auto so the browser scales to fit BOTH constraints and keeps
+           the aspect ratio -- with an explicit width:100% a max-height squashes
+           the photo instead of shrinking it. */
+        width: auto;
+        /* .identity-inner is a flex column, so the default align-items:stretch
+           would force the width back to 240px and squash the photo. */
+        align-self: flex-start;
+        max-height: max(140px, calc(100vh - 560px));
+    }
+}
+
 .affiliation {
     display: flex;
     flex-direction: column;
