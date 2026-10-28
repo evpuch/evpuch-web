@@ -25,21 +25,44 @@ function initMolecule() {
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-    scene.add(ambientLight);
+    // Theme. Mirrors the CSS: light unless <html data-theme="dark">. The dark
+    // palette is pale emissive blues that glow against black; on a white page
+    // they wash out completely, so light mode needs its own darker, saturated
+    // set lit by much stronger ambient instead of coloured point lights.
+    const THEME = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+    const LIGHT = THEME === 'light';
 
-    const pointLight1 = new THREE.PointLight(0x93c5fd, 1, 100);
-    pointLight1.position.set(10, 10, 10);
-    scene.add(pointLight1);
+    // Lighting. three r160 is physically correct, so a PointLight with a
+    // distance falls off as 1/d^2 and contributes almost nothing this far out
+    // -- the dark theme gets its look from emissive, not from these. Light mode
+    // can't lean on emissive (a glow needs a dark page), so it uses directional
+    // lights, which have no falloff, to actually shade the spheres.
+    if (LIGHT) {
+        scene.add(new THREE.AmbientLight(0xffffff, 0.62));
 
-    const pointLight2 = new THREE.PointLight(0x7dd3fc, 0.8, 100);
-    pointLight2.position.set(-10, -10, 5);
-    scene.add(pointLight2);
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        keyLight.position.set(6, 10, 8);
+        scene.add(keyLight);
 
-    const pointLight3 = new THREE.PointLight(0x60a5fa, 0.6, 100);
-    pointLight3.position.set(0, 10, -10);
-    scene.add(pointLight3);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.35);
+        fillLight.position.set(-8, -4, 6);
+        scene.add(fillLight);
+    } else {
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        scene.add(ambientLight);
+
+        const pointLight1 = new THREE.PointLight(0x93c5fd, 1, 100);
+        pointLight1.position.set(10, 10, 10);
+        scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0x7dd3fc, 0.8, 100);
+        pointLight2.position.set(-10, -10, 5);
+        scene.add(pointLight2);
+
+        const pointLight3 = new THREE.PointLight(0x60a5fa, 0.6, 100);
+        pointLight3.position.set(0, 10, -10);
+        scene.add(pointLight3);
+    }
 
     // Molecule group (outer = rotates; inner = holds geometry, offset to its centroid)
     const molecule = new THREE.Group();
@@ -50,53 +73,37 @@ function initMolecule() {
     // Atoms that respond to hover
     const atomMeshes = [];
 
-    // Materials - lighter shades of blue
-    const materials = {
-        core: new THREE.MeshPhongMaterial({
-            color: 0x93c5fd,
-            emissive: 0x3b82f6,
-            emissiveIntensity: 0.3,
-            shininess: 100
-        }),
-        major: new THREE.MeshPhongMaterial({
-            color: 0x7dd3fc,
-            emissive: 0x38bdf8,
-            emissiveIntensity: 0.2,
-            shininess: 80
-        }),
-        cluster: new THREE.MeshPhongMaterial({
-            color: 0xa5f3fc,
-            emissive: 0x22d3ee,
-            emissiveIntensity: 0.2,
-            shininess: 80
-        }),
-        secondary: new THREE.MeshPhongMaterial({
-            color: 0xa5b4fc,
-            emissive: 0x818cf8,
-            emissiveIntensity: 0.2,
-            shininess: 70
-        }),
-        tiny: new THREE.MeshPhongMaterial({
-            color: 0xbfdbfe,
-            emissive: 0x60a5fa,
-            emissiveIntensity: 0.15,
-            shininess: 60
-        }),
-        ring: new THREE.MeshPhongMaterial({
-            color: 0x7dd3fc,
-            emissive: 0x38bdf8,
-            emissiveIntensity: 0.2,
-            shininess: 80
-        }),
-        bond: new THREE.MeshPhongMaterial({
-            color: 0x93c5fd,
-            emissive: 0x3b82f6,
-            emissiveIntensity: 0.1,
-            shininess: 50,
-            transparent: true,
-            opacity: 0.7
-        })
+    // Materials. Light mode uses deep, saturated colours with almost no
+    // emissive (a glow only reads as "lit" against black); dark mode keeps
+    // the original pale blues.
+    const PALETTE = LIGHT ? {
+        core:      { color: 0x2563eb, emissive: 0x1d4ed8, ei: 0.04, shininess: 100 },
+        major:     { color: 0x0ea5e9, emissive: 0x0284c7, ei: 0.04, shininess: 80 },
+        cluster:   { color: 0x06b6d4, emissive: 0x0891b2, ei: 0.04, shininess: 80 },
+        secondary: { color: 0x6366f1, emissive: 0x4f46e5, ei: 0.04, shininess: 70 },
+        tiny:      { color: 0x7dd3fc, emissive: 0x38bdf8, ei: 0.04, shininess: 60 },
+        ring:      { color: 0x0ea5e9, emissive: 0x0284c7, ei: 0.04, shininess: 80 },
+        bond:      { color: 0x94a3b8, emissive: 0x64748b, ei: 0.0, shininess: 50, opacity: 0.75 }
+    } : {
+        core:      { color: 0x93c5fd, emissive: 0x3b82f6, ei: 0.3,  shininess: 100 },
+        major:     { color: 0x7dd3fc, emissive: 0x38bdf8, ei: 0.2,  shininess: 80 },
+        cluster:   { color: 0xa5f3fc, emissive: 0x22d3ee, ei: 0.2,  shininess: 80 },
+        secondary: { color: 0xa5b4fc, emissive: 0x818cf8, ei: 0.2,  shininess: 70 },
+        tiny:      { color: 0xbfdbfe, emissive: 0x60a5fa, ei: 0.15, shininess: 60 },
+        ring:      { color: 0x7dd3fc, emissive: 0x38bdf8, ei: 0.2,  shininess: 80 },
+        bond:      { color: 0x93c5fd, emissive: 0x3b82f6, ei: 0.1,  shininess: 50, opacity: 0.7 }
     };
+
+    const materials = {};
+    for (const [key, p] of Object.entries(PALETTE)) {
+        materials[key] = new THREE.MeshPhongMaterial({
+            color: p.color,
+            emissive: p.emissive,
+            emissiveIntensity: p.ei,
+            shininess: p.shininess,
+            ...(p.opacity !== undefined ? { transparent: true, opacity: p.opacity } : {})
+        });
+    }
 
     // Helper function to create atom
     function createAtom(radius, material, position, group) {
@@ -345,7 +352,13 @@ function initMolecule() {
     const pointer = new THREE.Vector2();
     let pointerMoved = false;  // re-pick the branch only when the cursor moves
     let currentGroup = null;   // branch currently shown in the side panel
-    const HL_COLOR = new THREE.Color(0x64ffda);
+    // Branch highlight. On dark, brightening toward mint reads as "lit". On a
+    // white page that lowers contrast instead, so light mode swings the hue
+    // hard toward the site's teal accent and barely touches emissive.
+    const HL = LIGHT
+        ? { color: new THREE.Color(0x0f766e), mixColor: 0.92, mixEmissive: 0.35, ei: 0.10, scale: 0.20 }
+        : { color: new THREE.Color(0x64ffda), mixColor: 0.50, mixEmissive: 0.65, ei: 0.60, scale: 0.16 };
+    const HL_COLOR = HL.color;
 
     // Each branch maps to a short blurb — PLACEHOLDER COPY, edit these freely.
     const BLURBS = {
@@ -628,10 +641,10 @@ function initMolecule() {
             m.userData.hl += (target - m.userData.hl) * 0.15;
             const hl = m.userData.hl;
             if (hl > 0.002) {
-                m.material.color.copy(m.userData.baseColor).lerp(HL_COLOR, hl * 0.5);
-                m.material.emissive.copy(m.userData.baseEmissive).lerp(HL_COLOR, hl * 0.65);
-                m.material.emissiveIntensity = m.userData.baseEI + hl * 0.6;
-                m.scale.setScalar(1 + hl * 0.16);
+                m.material.color.copy(m.userData.baseColor).lerp(HL_COLOR, hl * HL.mixColor);
+                m.material.emissive.copy(m.userData.baseEmissive).lerp(HL_COLOR, hl * HL.mixEmissive);
+                m.material.emissiveIntensity = m.userData.baseEI + hl * HL.ei;
+                m.scale.setScalar(1 + hl * HL.scale);
             } else {
                 m.material.color.copy(m.userData.baseColor);
                 m.material.emissive.copy(m.userData.baseEmissive);

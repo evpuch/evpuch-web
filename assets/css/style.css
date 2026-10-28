@@ -8,14 +8,35 @@
     padding: 0;
 }
 
+/* Light theme (default). Set data-theme="dark" on <html> in both layouts to
+   switch the whole site -- CSS and molecule -- back to the original dark. */
 :root {
+    --bg: #fbfbfa;              /* warm near-white; pure #fff reads harsher */
+    --fg: #1b1b1d;
+    --fg-dim: #6a6a70;          /* 5.3:1 on --bg */
+    --accent: #0f766e;          /* teal-700; #64ffda is ~1.3:1 on white */
+    --accent-dim: rgba(15, 118, 110, 0.14);
+    --border: rgba(0, 0, 0, 0.11);
+    --panel-bg: rgba(255, 255, 255, 0.90);
+    --panel-bg-soft: rgba(255, 255, 255, 0.80);
+    --panel-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    --art-placeholder: #e6e6e9;
+    --hero-glow: radial-gradient(ellipse 55% 60% at 50% 45%, rgba(37, 99, 235, 0.08) 0%, rgba(13, 148, 136, 0.05) 40%, transparent 72%);
+    --mono: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+}
+
+:root[data-theme="dark"] {
     --bg: #0a0a0b;
     --fg: #e8e8e8;
     --fg-dim: #888;
     --accent: #64ffda;
     --accent-dim: rgba(100, 255, 218, 0.15);
     --border: rgba(255, 255, 255, 0.08);
-    --mono: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+    --panel-bg: rgba(12, 14, 20, 0.9);
+    --panel-bg-soft: rgba(12, 14, 20, 0.7);
+    --panel-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    --art-placeholder: #1a1c22;
+    --hero-glow: radial-gradient(ellipse 55% 60% at 50% 45%, rgba(96, 165, 250, 0.10) 0%, rgba(100, 255, 218, 0.03) 40%, transparent 72%);
 }
 
 html {
@@ -53,8 +74,7 @@ a:hover {
     height: 100svh;
     overflow: hidden;
     border-bottom: 1px solid var(--border);
-    background:
-        radial-gradient(ellipse 55% 60% at 50% 45%, rgba(96, 165, 250, 0.10) 0%, rgba(100, 255, 218, 0.03) 40%, transparent 72%);
+    background: var(--hero-glow);
 }
 
 .hero-molecule {
@@ -73,10 +93,10 @@ a:hover {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    background: rgba(12, 14, 20, 0.9);
+    background: var(--panel-bg);
     border: 1px solid var(--border);
     border-radius: 10px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--panel-shadow);
     backdrop-filter: blur(8px);
     pointer-events: none;
     opacity: 0;
@@ -145,7 +165,7 @@ a:hover {
     font-size: 1.25rem;
     line-height: 1;
     color: var(--fg);
-    background: rgba(12, 14, 20, 0.82);
+    background: var(--panel-bg);
     border: 1px solid var(--border);
     border-radius: 50%;
     cursor: pointer;
@@ -215,7 +235,7 @@ a:hover {
     gap: 12px;
     max-width: 280px;
     padding: 8px 16px 8px 8px;
-    background: rgba(12, 14, 20, 0.7);
+    background: var(--panel-bg-soft);
     border: 1px solid var(--border);
     border-radius: 999px;
     backdrop-filter: blur(8px);
@@ -240,8 +260,8 @@ a:hover {
     height: 40px;
     flex-shrink: 0;
     border-radius: 50%;
-    background: #1a1c22 center / cover no-repeat;
-    box-shadow: inset 0 0 0 1px var(--border), 0 0 0 4px rgba(12, 14, 20, 0.7);
+    background: var(--art-placeholder) center / cover no-repeat;
+    box-shadow: inset 0 0 0 1px var(--border), 0 0 0 4px var(--panel-bg-soft);
 }
 
 .spotify-bubble.playing .sp-art {
